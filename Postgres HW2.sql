@@ -77,7 +77,8 @@ create table roles (
 id serial primary key,
 role_name varchar not null unique);
 
-
+alter table roles
+    alter column role_name type varchar(30)
 
 select * from roles
 
@@ -99,6 +100,22 @@ select * from roles
 -- employee_id. Int, not null, unique (внешний ключ для таблицы employees, поле id)
 -- role_id. Int, not null (внешний ключ для таблицы roles, поле id)
 
+create table roles_employee (
+id serial primary key,
+employee_id int not null unique,
+role_id int not null,
+foreign key (employee_id) references employees(id),
+foreign key (role_id) references roles(id));
+
+select * from roles_employee
+
+insert into roles_employee (employee_id, role_id)
+values (7, 2), (20, 4), (3, 9), (5, 13), (23, 4), (11, 2), (10, 9), (22, 13), (21, 3), (34,4),
+		(70, 5), (12, 12), (14, 5), (45,12), (32, 5), (9, 12), (60, 3), (31, 12), (35, 11), (27, 9),
+(69,4), (68,7), (67, 16), (65, 9), (64, 13), (63, 4), (62, 2), (61, 13), (59, 4), (58, 1), 
+(57, 5), (50, 12), (49, 5), (48,12), (47, 5), (46, 12), (43, 3), (42, 12), (33, 11), (36, 9);
+
+select * from roles_employee
 
 
 
