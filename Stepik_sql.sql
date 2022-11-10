@@ -269,5 +269,127 @@ ORDER BY Длительность DESC, city DESC;
 
 
 --36
+Вывести информацию о командировках сотрудника(ов), которые были самыми короткими по времени. В результат включить столбцы name, city, date_first, date_last.
 
+SELECT name, city, date_first, date_last
+FROM trip WHERE
+ABS(DATEDIFF(date_first, date_last) - 1) = (SELECT MIN(ABS(DATEDIFF(date_first, date_last) - 1))
+FROM trip);
+
+
+--37
+Вывести информацию о командировках, начало и конец которых относятся к одному месяцу (год может быть любой). В результат включить столбцы name, city, date_first, date_last. Строки отсортировать сначала  в алфавитном порядке по названию города, а затем по фамилии сотрудника .
+
+SELECT name, city, date_first, date_last
+FROM trip WHERE MONTH(date_first) = MONTH(date_last)
+ORDER BY city, name
+
+
+--38
+Вывести название месяца и количество командировок для каждого месяца. Считаем, что командировка относится к некоторому месяцу, если она началась в этом месяце. Информацию вывести сначала в отсортированном по убыванию количества, а потом в алфавитном порядке по названию месяца виде. Название столбцов – Месяц и Количество.
+
+SELECT MONTHNAME(date_first) AS Месяц, COUNT(MONTHNAME(date_first)) AS Количество
+FROM trip
+GROUP BY MONTHNAME(date_first)
+ORDER BY Количество DESC, Месяц
+
+--39
+Вывести сумму суточных (произведение количества дней командировки и размера суточных) для командировок, первый день которых пришелся на февраль или март 2020 года. Значение суточных для каждой командировки занесено в столбец per_diem. Вывести фамилию и инициалы сотрудника, город, первый день командировки и сумму суточных. Последний столбец назвать Сумма. Информацию отсортировать сначала  в алфавитном порядке по фамилиям сотрудников, а затем по убыванию суммы суточных.
+
+SELECT name, city, date_first, DATEDIFF(date_last+1, date_first)*per_diem AS Сумма
+FROM trip WHERE YEAR(date_first)=2020 AND MONTH(date_first)=3 OR MONTH(date_first)=2
+ORDER BY name, Сумма DESC;
+
+
+--40
+Вывести фамилию с инициалами и общую сумму суточных, полученных за все командировки для тех сотрудников, которые были в командировках больше чем 3 раза, в отсортированном по убыванию сумм суточных виде. Последний столбец назвать Сумма.
+
+SELECT name, SUM((DATEDIFF(date_last, date_first) + 1) * per_diem) AS Сумма
+FROM trip
+GROUP BY name
+HAVING COUNT(date_first) > 3
+ORDER BY name
+
+
+
+--41
+Создать таблицу fine следующей структуры:
+Поле 	Описание
+fine_id 	ключевой столбец целого типа с автоматическим увеличением значения ключа на 1
+name 	строка длиной 30
+number_plate 	строка длиной 6
+violation 	строка длиной 50
+sum_fine 	вещественное число, максимальная длина 8, количество знаков после запятой 2
+date_violation 	дата
+date_payment 	дата
+
+CREATE TABLE fine
+(fine_id INT PRIMARY KEY AUTO_INCREMENT,
+name VARCHAR(30),
+number_plate VARCHAR(6),
+violation VARCHAR(50),
+sum_fine DECIMAL(8,2),
+date_violation DATE,
+date_payment DATE);
+
+
+--42
+В таблицу fine первые 5 строк уже занесены. Добавить в таблицу записи с ключевыми значениями 6, 7, 8.
+
+INSERT INTO fine
+(name, number_plate, violation, date_violation)
+VALUES
+('Баранов П.Е.', 'Р523ВТ', 'Превышение скорости(от 40 до 60)', '2020-02-14'),
+('Абрамова К.А.', 'О111АВ', 'Проезд на запрещающий сигнал', '2020-02-23'),
+('Яковлев Г.Р.', 'Т330ТТ', 'Проезд на запрещающий сигнал', '2020-03-03');
+
+
+--43
+Занести в таблицу fine суммы штрафов, которые должен оплатить водитель, в соответствии с данными из таблицы traffic_violation. При этом суммы заносить только в пустые поля столбца  sum_fine.
+Таблица traffic_violationсоздана и заполнена.
+Важно! Сравнение значения столбца с пустым значением осуществляется с помощью оператора IS NULL.
+
+UPDATE fine f, traffic_violation tv
+SET f.sum_fine = tv.sum_fine
+WHERE f.violation = tv.violation  AND f.sum_fine IS NULL;
+
+
+--44
+Вывести фамилию, номер машины и нарушение только для тех водителей, которые на одной машине нарушили одно и то же правило   два и более раз. При этом учитывать все нарушения, независимо от того оплачены они или нет. Информацию отсортировать в алфавитном порядке, сначала по фамилии водителя, потом по номеру машины и, наконец, по нарушению.
+
+SELECT name, number_plate, violation FROM fine
+GROUP by name, number_plate, violation
+HAVING count(violation) >= 2
+ORDER by name, number_plate, violation
+
+
+--45
+В таблице fine увеличить в два раза сумму неоплаченных штрафов для отобранных на предыдущем шаге записей. 
+
+UPDATE fine as f, 
+(SELECT name, number_plate, violation FROM fine
+GROUP BY name, number_plate, violation
+HAVING count(*) >= 2 ) AS dv
+   SET f.sum_fine = f.sum_fine*2
+   WHERE f.date_payment IS Null
+	   AND (f.name = dv.name
+	   AND f.violation = dv.violation);
+
+
+--46
+Водители оплачивают свои штрафы. В таблице payment занесены даты их оплаты:
+payment_id 	name 	        number_plate 	violation 	                       date_violation 	date_payment
+1 	     Яковлев Г.Р. 	М701АА   	Превышение скорости (от 20 до 40) 	2020-01-12 	2020-01-22
+2 	     Баранов П.Е. 	Р523ВТ 	        Превышение скорости (от 40 до 60) 	2020-02-14 	2020-03-06
+3 	     Яковлев Г.Р. 	Т330ТТ 	        Проезд на запрещающий сигнал 	        2020-03-03 	2020-03-23
+
+Необходимо:
+    в таблицу fine занести дату оплаты соответствующего штрафа из таблицы payment; 
+    уменьшить начисленный штраф в таблице fine в два раза  (только для тех штрафов, информация о которых занесена в таблицу payment) , если оплата произведена не позднее 20 дней со дня нарушения.
+
+UPDATE fine as f, payment as p
+SET f.date_payment = p.date_payment,
+    f.sum_fine = IF(DATEDIFF(f.date_payment, f.date_violation) <= 20, f.sum_fine/2, f.sum_fine)
+WHERE f.name = p.name AND f.number_plate = p.number_plate AND f.violation = p.violation AND
+      f.date_violation = p.date_violation AND f.date_payment IS NULL;
 
