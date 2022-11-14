@@ -387,9 +387,33 @@ payment_id 	name 	        number_plate 	violation 	                       date_v
     в таблицу fine занести дату оплаты соответствующего штрафа из таблицы payment; 
     уменьшить начисленный штраф в таблице fine в два раза  (только для тех штрафов, информация о которых занесена в таблицу payment) , если оплата произведена не позднее 20 дней со дня нарушения.
 
-UPDATE fine as f, payment as p
-SET f.date_payment = p.date_payment,
-    f.sum_fine = IF(DATEDIFF(f.date_payment, f.date_violation) <= 20, f.sum_fine/2, f.sum_fine)
-WHERE f.name = p.name AND f.number_plate = p.number_plate AND f.violation = p.violation AND
-      f.date_violation = p.date_violation AND f.date_payment IS NULL;
+UPDATE fine, payment SET fine.date_payment = payment.date_payment, fine.sum_fine = IF(DATEDIFF(fine.date_payment, fine.date_violation) <= 20, fine.sum_fine/2, fine.sum_fine)
+WHERE fine.name = payment.name AND fine.number_plate = payment.number_plate AND fine.violation = payment.violation AND  fine.date_violation = payment.date_violation AND fine.date_payment IS NULL;
+
+
+--47 
+Создать новую таблицу back_payment, куда внести информацию о неоплаченных штрафах (Фамилию и инициалы водителя, номер машины, нарушение, сумму штрафа  и  дату нарушения) из таблицы fine.
+
+CREATE TABLE back_payment 
+(SELECT name, number_plate, violation, sum_fine, date_violation
+FROM fine WHERE date_payment IS NULL);
+
+
+--48
+Удалить из таблицы fine информацию о нарушениях, совершенных раньше 1 февраля 2020 года. 
+
+DELETE FROM fine
+WHERE date_violation < DATE(20200201) AND date_payment IS NOT NULL;
+
+
+--49
+Создать таблицу author следующей структуры:
+Поле 	Тип, описание
+author_id 	INT PRIMARY KEY AUTO_INCREMENT
+name_author 	VARCHAR(50)
+
+CREATE TABLE author
+(author_id int PRIMARY KEY AUTO_INCREMENT,
+ name_author varchar(50));
+
 
