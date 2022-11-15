@@ -416,4 +416,114 @@ CREATE TABLE author
 (author_id int PRIMARY KEY AUTO_INCREMENT,
  name_author varchar(50));
 
+--50
+Перепишите запрос на создание таблицы book , чтобы ее структура соответствовала
+ структуре, показанной на логической схеме 
+(таблица genre уже создана, порядок следования столбцов - 
+как на логической схеме в таблице book, genre_id  - внешний ключ). 
+Для genre_id ограничение о недопустимости пустых значений не задавать. 
+В качестве главной таблицы для описания поля  genre_id использовать таблицу genre 
+следующей структуры:
+Поле 	Тип, описание
+genre_id 	INT PRIMARY KEY AUTO_INCREMENT
+name_genre 	VARCHAR(30)
 
+ (нужно создать только таблицу book):
+
+CREATE TABLE book 
+(   book_id INT PRIMARY KEY AUTO_INCREMENT, 
+    title VARCHAR(50), 
+    author_id INT NOT NULL,
+    genre_id INT,
+    price DECIMAL(8, 2), 
+    amount INT, 
+    FOREIGN KEY (author_id)  REFERENCES author (author_id),
+    FOREIGN KEY (genre_id)  REFERENCES genre (genre_id) );
+
+
+--51 
+Создать таблицу book той же структуры, что и на предыдущем шаге. Будем считать, что при удалении автора из таблицы author, должны удаляться все записи о книгах из таблицы book, написанные этим автором. А при удалении жанра из таблицы genre для соответствующей записи book установить значение Null в столбце genre_id
+
+CREATE TABLE book
+(   book_id INT PRIMARY KEY AUTO_INCREMENT, 
+    title VARCHAR(50), 
+    author_id INT NOT NULL, 
+    genre_id INT,
+    price DECIMAL(8,2), 
+    amount INT, 
+    FOREIGN KEY (author_id)  REFERENCES author (author_id) ON DELETE CASCADE,
+    FOREIGN KEY (genre_id)  REFERENCES genre (genre_id) ON DELETE SET NULL
+);
+
+
+--52
+Добавьте три последние записи (с ключевыми значениями 6, 7, 8) в таблицу book, первые 5 записей уже добавлены:
+book_id 	title 			author_id 	genre_id 	price 	amount
+1 		Мастер и Маргарита 		1 	1 		670.99 	3
+2 		Белая гвардия 			1 	1 		540.50 	5
+3 		Идиот 				2 	1 		460.00 	10
+4 		Братья Карамазовы 		2 	1 		799.01 	3
+5 		Игрок 				2 	1 		480.50 	10
+6 		Стихотворения и поэмы 		3 	2 		650.00 	15
+7 		Черный человек 			3 	2 		570.20 	6
+8 		Лирика 				4 	2 		518.99 	2
+
+INSERT INTO book(title, author_id, genre_id, price, amount)
+VALUES ('Стихотворения и поэмы', 3, 2, 650.00, 15),
+       ('Черный человек', 3, 2, 570.20, 6),
+       ('Лирика', 4, 2, 518.99, 2)
+
+
+--53
+Вывести название, жанр и цену тех книг, количество которых больше 8, в отсортированном по убыванию цены виде.
+
+SELECT title, name_genre, price FROM book 
+JOIN genre ON book.genre_id = genre.genre_id
+WHERE book.amount > 8
+ORDER BY price DESC;
+
+
+--54
+Вывести все жанры, которые не представлены в книгах на складе.
+
+SELECT name_genre
+FROM genre LEFT JOIN book 
+    ON genre.genre_id = book.genre_id
+WHERE title IS NULL;
+
+
+--55
+Есть список городов, хранящийся в таблице city:
+city_id 	name_city
+1 	Москва
+2 	Санкт-Петербург
+3 	Владивосток
+
+Необходимо в каждом городе провести выставку книг каждого автора в течение 2020 года. Дату проведения выставки выбрать случайным образом. Создать запрос, который выведет город, автора и дату проведения выставки. Последний столбец назвать Дата. Информацию вывести, отсортировав сначала в алфавитном порядке по названиям городов, а потом по убыванию дат проведения выставок.
+
+SELECT  name_city,name_author, DATE_ADD('2020-01-01', INTERVAL FLOOR(RAND()*365) DAY) AS Дата
+FROM city CROSS JOIN author
+ORDER BY
+    name_city ASC,
+    Дата DESC;
+
+
+--56
+Вывести информацию о тех книгах, их авторах и жанрах, цена которых принадлежит интервалу от 500  до 700 рублей  включительно.
+
+SELECT title, name_author, name_genre, price, amount
+FROM
+    author 
+    INNER JOIN  book ON author.author_id = book.author_id
+    INNER JOIN genre ON genre.genre_id = book.genre_id
+WHERE price BETWEEN 500 AND 700;
+
+
+--57
+Вывести информацию о книгах (жанр, книга, автор), относящихся к жанру, включающему слово «роман» в отсортированном по названиям книг виде.
+
+SELECT name_genre, title, name_author  
+FROM  author JOIN  book ON author.author_id = book.author_id
+    JOIN genre ON genre.genre_id = book.genre_id
+WHERE name_genre = 'Роман'
+ORDER BY title;
