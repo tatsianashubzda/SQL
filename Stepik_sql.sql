@@ -527,3 +527,48 @@ FROM  author JOIN  book ON author.author_id = book.author_id
     JOIN genre ON genre.genre_id = book.genre_id
 WHERE name_genre = 'Роман'
 ORDER BY title;
+
+
+
+---58
+Посчитать количество экземпляров  книг каждого автора из таблицы author.  Вывести тех авторов,  количество книг которых меньше 10, в отсортированном по возрастанию количества виде. Последний столбец назвать Количество.
+
+SELECT name_author, sum(amount) AS Количество
+FROM author LEFT JOIN book on author.author_id = book.author_id
+GROUP BY name_author
+HAVING Ково is NULL
+ORDER BY Количество ASC;   
+
+
+--59
+Вывести в алфавитном порядке всех авторов, которые пишут только в одном жанре. Поскольку у нас в таблицах так занесены данные, что у каждого автора книги только в одном жанре,  для этого запроса внесем изменения в таблицу book. Пусть у нас  книга Есенина «Черный человек» относится к жанру «Роман», а книга Булгакова «Белая гвардия» к «Приключениям» (эти изменения в таблицы уже внесены).
+
+SELECT name_author
+FROM author INNER JOIN book USING(author_id)
+GROUP BY name_author
+HAVING COUNT(distinct(genre_id)) = 1
+ORDER BY name_author;
+
+
+--60
+Вывести информацию о книгах (название книги, фамилию и инициалы автора, название жанра, цену и количество экземпляров книги), написанных в самых популярных жанрах, в отсортированном в алфавитном порядке по названию книг виде. Самым популярным считать жанр, общее количество экземпляров книг которого на складе максимально.
+
+SELECT title, name_author, name_genre, price, amount FROM  
+author INNER JOIN book ON author.author_id = book.author_id  
+INNER JOIN ( SELECT genre_id FROM book 
+  GROUP BY genre_id 
+  HAVING SUM(amount) >= ALL (SELECT SUM(amount)FROM book  
+  GROUP BY genre_id))
+  query_in ON book.genre_id = query_in.genre_id  INNER JOIN genre ON query_in.genre_id = genre.genre_id 
+ORDER BY 1;
+
+--61
+Если в таблицах supply  и book есть одинаковые книги, которые имеют равную цену,  вывести их название и автора, а также посчитать общее количество экземпляров книг в таблицах supply и book,  столбцы назвать Название, Автор  и Количество
+
+SELECT book.title AS Название, name_author AS Автор, sum(book.amount + supply.amount) AS Количество
+FROM author INNER JOIN book USING (author_id)   
+            INNER JOIN supply ON book.title = supply.title AND author.name_author = supply.author
+WHERE book.price = supply.price
+GROUP BY book.title, name_author;
+
+--62
