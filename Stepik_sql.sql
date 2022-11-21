@@ -579,8 +579,7 @@ price=k1?+k2?(p1??k1?+p2??k2?)?где  p1, p2 - цена книги в таблицах book и supply
 
        k1, k2 - количество книг в таблицах book и supply.
 
-UPDATE book as b  INNER JOIN author as a USING(author_id)
-        INNER JOIN supply as s ON b.title=s.title AND a.name_author=s.author
+UPDATE book as b JOIN author as a USING(author_id) JOIN supply as s ON b.title=s.title AND a.name_author=s.author
 SET b.amount=b.amount + s.amount,
     b.price=(b.price*b.amount + s.price*s.amount)/(b.amount+s.amount),
     s.amount=0
@@ -588,3 +587,9 @@ WHERE b.price <> s.price;
 
 
 --63
+Включить новых авторов в таблицу author с помощью запроса на добавление, а затем вывести все данные из таблицы author.  Новыми считаются авторы, которые есть в таблице supply, но нет в таблице author.
+
+INSERT INTO author (name_author)
+SELECT supply.author
+FROM author RIGHT JOIN supply on author.name_author = supply.author
+WHERE name_author IS Null;
