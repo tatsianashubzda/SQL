@@ -590,6 +590,43 @@ WHERE b.price <> s.price;
 Включить новых авторов в таблицу author с помощью запроса на добавление, а затем вывести все данные из таблицы author.  Новыми считаются авторы, которые есть в таблице supply, но нет в таблице author.
 
 INSERT INTO author (name_author)
-SELECT supply.author
-FROM author RIGHT JOIN supply on author.name_author = supply.author
+SELECT supply.author FROM author RIGHT JOIN supply on author.name_author = supply.author
 WHERE name_author IS Null;
+
+--64
+Добавить новые книги из таблицы supply в таблицу book на основе сформированного выше запроса. Затем вывести для просмотра таблицу book.
+
+INSERT INTO book (title, author_id, price, amount)
+SELECT title, author_id, price, amount
+FROM author INNER JOIN supply ON author.name_author = supply.author
+WHERE amount <> 0;
+
+--65
+ Занести для книги «Стихотворения и поэмы» Лермонтова жанр «Поэзия», а для книги «Остров сокровищ» Стивенсона - «Приключения». (Использовать два запроса).
+
+UPDATE book, genre
+SET book.genre_id = CASE
+    WHEN book_id = 10 THEN (SELECT genre_id FROM genre WHERE name_genre = 'Поэзия')
+    WHEN book_id = 11 THEN (SELECT genre_id FROM genre WHERE name_genre = 'Приключения')
+    ELSE book.genre_id
+    END;
+
+--66
+Удалить всех авторов и все их книги, общее количество книг которых меньше 20.
+DELETE FROM author
+WHERE author_id IN
+    (SELECT author_id FROM book
+    GROUP BY author_id
+    HAVING SUM(amount) < 20);
+
+
+--67
+Удалить все жанры, к которым относится меньше 4-х книг. В таблице book для этих жанров установить значение Null.
+
+DELETE FROM genre WHERE genre_id in 
+(select genre_id   from book 
+ group by genre_id 
+ having count(amount) < 4);
+
+
+--68
