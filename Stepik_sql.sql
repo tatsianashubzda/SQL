@@ -630,3 +630,20 @@ DELETE FROM genre WHERE genre_id in
 
 
 --68
+Удалить всех авторов, которые пишут в жанре "Поэзия". Из таблицы book удалить все книги этих авторов. В запросе для отбора авторов использовать полное название жанра, а не его id.
+
+DELETE FROM author
+USING book INNER JOIN author ON author.author_id = book.author_id
+INNER JOIN genre ON book.genre_id = genre.genre_id
+WHERE genre.name_genre = 'Поэзия'
+
+
+--69
+Вывести все заказы Баранова Павла (id заказа, какие книги, по какой цене и в каком количестве он заказал) в отсортированном по номеру заказа и названиям книг виде.
+
+SELECT buy_book.buy_id, title, price, buy_book.amount
+FROM client INNER JOIN buy ON client.client_id = buy.client_id
+ INNER JOIN buy_book ON buy_book.buy_id = buy.buy_id
+ INNER JOIN book ON buy_book.book_id=book.book_id
+WHERE name_client LIKE 'Баранов Павел'
+ORDER BY buy_book.buy_id, title;
