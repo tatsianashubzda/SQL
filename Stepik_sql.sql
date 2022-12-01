@@ -647,3 +647,25 @@ FROM client INNER JOIN buy ON client.client_id = buy.client_id
  INNER JOIN book ON buy_book.book_id=book.book_id
 WHERE name_client LIKE 'Баранов Павел'
 ORDER BY buy_book.buy_id, title;
+
+
+--70
+Посчитать, сколько раз была заказана каждая книга, для книги вывести ее автора (нужно посчитать, в каком количестве заказов фигурирует каждая книга).  Вывести фамилию и инициалы автора, название книги, последний столбец назвать Количество. Результат отсортировать сначала  по фамилиям авторов, а потом по названиям книг.
+
+SELECT author.name_author, book.title, COUNT(buy_book.book_id) AS Количество
+FROM book INNER JOIN author ON author.author_id = book.author_id
+LEFT JOIN buy_book ON buy_book.book_id = book.book_id
+LEFT JOIN buy ON buy.buy_id = buy_book.buy_id
+GROUP BY author.name_author, book.title
+ORDER BY author.name_author, book.title
+
+
+
+--71
+Вывести города, в которых живут клиенты, оформлявшие заказы в интернет-магазине. Указать количество заказов в каждый город, этот столбец назвать Количество. Информацию вывести по убыванию количества заказов, а затем в алфавитном порядке по названию городов.
+
+SELECT city.name_city, COUNT(client_id) AS Количество
+FROM buy INNER JOIN client USING (client_id)
+INNER JOIN city USING (city_id)
+GROUP BY buy.client_id
+ORDER BY Количество DESC, name_city;
