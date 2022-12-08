@@ -701,7 +701,6 @@ ORDER BY buy_id
 
 
 --75
-
 В таблице city для каждого города указано количество дней, за которые заказ может быть доставлен в этот город
  (рассматривается только этап Транспортировка). Для тех заказов, которые прошли этап транспортировки, вывести
  количество дней за которое заказ реально доставлен в город. А также, если заказ доставлен с опозданием, 
@@ -713,6 +712,50 @@ SELECT buy_id, DATEDIFF(date_step_end, date_step_beg) AS Количество_дней,
 IF(DATEDIFF(date_step_end, date_step_beg)<=days_delivery, 0, DATEDIFF(date_step_end, date_step_beg) - days_delivery) AS Опоздание
 FROM buy_step JOIN buy USING(buy_id) JOIN client USING(client_id) JOIN city USING(city_id)              
 WHERE step_id=3 AND DATEDIFF(date_step_end, date_step_beg) IS NOT NULL
-ORDER BY 1
+ORDER BY buy_id
+
+
+--76
+Выбрать всех клиентов, которые заказывали книги Достоевского, информацию вывести в отсортированном по алфавиту виде. 
+В решении используйте фамилию автора, а не его id.
+
+SELECT DISTINCT name_client
+FROM client INNER JOIN buy USING (client_id)
+INNER JOIN buy_book USING (buy_id)
+INNER JOIN book USING (book_id)
+INNER JOIN author USING (author_id)
+WHERE name_author LIKE "Достоевский%"
+ORDER BY name_client
+
+
+--77
+Вывести жанр (или жанры), в котором было заказано больше всего экземпляров книг, указать это количество. 
+Последний столбец назвать Количество.
+
+SELECT name_genre, SUM(buy_book.amount) AS Количество
+FROM buy_book
+JOIN book USING(book_id)
+JOIN genre USING(genre_id)
+GROUP BY name_genre 
+HAVING Количество  = (SELECT SUM(buy_book.amount) FROM buy_book JOIN book USING(book_id) JOIN genre USING(genre_id)
+                    GROUP BY name_genre
+                    ORDER BY SUM(buy_book.amount) DESC
+                    LIMIT 1)
+
+
+--78
+Сравнить ежемесячную выручку от продажи книг за текущий и предыдущий годы. 
+Для этого вывести год, месяц, сумму выручки в отсортированном сначала по возрастанию месяцев, 
+затем по возрастанию лет виде. Название столбцов: Год, Месяц, Сумма.
+
+SELECT YEAR(date_payment) AS Год, MONTHNAME(date_payment) AS Месяц, SUM(amount*price) AS Сумма
+FROM buy_archive
+GROUP BY Год, Месяц
+UNION ALL
+SELECT YEAR(date_step_end) AS Год, MONTHNAME(date_step_end) AS Месяц, SUM(bb.amount*price) AS Сумма
+FROM buy_book bb  JOIN buy_step bs ON bb.buy_id = bs.buy_id  AND bs.date_step_end  AND bs.step_id = 1
+JOIN book USING(book_id)
+GROUP BY Год, Месяц
+ORDER BY Месяц, Год;
 
 
