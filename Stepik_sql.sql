@@ -760,26 +760,23 @@ ORDER BY Месяц, Год;
 
 
 --79
-Для каждой отдельной книги необходимо вывести информацию о количестве проданных экземпляров и их стоимости за 2020 и 2019 год . 
-Вычисляемые столбцы назвать Количество и Сумма. Информацию отсортировать по убыванию стоимости.
+Включить нового человека в таблицу с клиентами. Его имя Попов Илья, его email popov@test, проживает он в Москве.
 
-SELECT title, SUM(Количество) AS Количество, SUM(Сумма) AS Сумма FROM
-    
-    (SELECT title, SUM(buy_book.amount) AS Количество, SUM(buy_book.amount*book.price) AS Сумма
-    FROM book JOIN buy_book USING(book_id)
-              JOIN buy USING(buy_id)
-              JOIN buy_step USING(buy_id)
-              JOIN step USING(step_id)
-    WHERE step.name_step = 'Оплата' AND buy_step.date_step_end is not null 
-    GROUP BY title
-     
-    UNION ALL
-    SELECT book.title, SUM(buy_archive.amount) AS Количество, SUM(buy_archive.amount*buy_archive.price) AS Сумма
-    FROM buy_archive JOIN book USING(book_id)
-    GROUP BY book.title) AS Knigi
-    
-GROUP BY title
-ORDER BY Сумма DESC
+INSERT INTO client(name_client,city_id,email)
+SELECT 'Попов Илья', city_id, 'popov@test'
+FROM city
+WHERE name_city = 'Москва';
 
 
 --80
+Создать новый заказ для Попова Ильи. Его комментарий для заказа: «Связаться со мной по вопросу доставки».
+
+INSERT buy (buy_description, client_id)
+SELECT 'Связаться со мной по вопросу доставки', client_id
+FROM client
+WHERE name_client IN ('Попов Илья');
+
+
+--81
+
+
