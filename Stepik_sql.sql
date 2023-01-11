@@ -778,5 +778,19 @@ WHERE name_client IN ('Попов Илья');
 
 
 --81
+В таблицу buy_book добавить заказ с номером 5. Этот заказ должен содержать книгу Пастернака «Лирика» в количестве двух экземпляров и книгу Булгакова «Белая гвардия» в одном экземпляре.
+
+INSERT INTO buy_book (buy_id, book_id, amount)
+VALUES
+    (5, (SELECT book_id FROM 
+         book JOIN author USING(author_id) 
+         WHERE title='Лирика' AND name_author LIKE 'Пастернак%'), 2),
+    (5, (SELECT book_id 
+         FROM book JOIN author USING(author_id) 
+         WHERE title='Белая Гвардия' AND name_author LIKE 'Булгаков%'), 1);
+
+
+--82
+Количество тех книг на складе, которые были включены в заказ с номером 5, уменьшить на то количество, которое в заказе с номером 5  указано.
 
 
