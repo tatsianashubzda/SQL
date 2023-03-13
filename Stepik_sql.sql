@@ -980,4 +980,15 @@ WHERE attempt_id = (SELECT MAX(attempt_id) FROM attempt)
 ORDER BY RAND()
 limit 3;
 
+--99
 
+
+—тудент прошел тестирование (то есть все его ответы занесены в таблицу testing), далее необходимо вычислить результат(запрос) и занести его в таблицу attempt дл€ соответствующей попытки.  –езультат попытки вычислить как количество правильных ответов, деленное на 3 (количество вопросов в каждой попытке) и умноженное на 100. –езультат округлить до целого.
+Ѕудем считать, что мы знаем id попытки,  дл€ которой вычисл€етс€ результат, в нашем случае это 8.
+
+
+UPDATE attempt
+    SET result = (SELECT ROUND((SUM(is_correct)/3)*100, 2)
+        FROM answer INNER JOIN testing ON answer.answer_id = testing.answer_id
+        WHERE testing.attempt_id = 8)
+    WHERE attempt.attempt_id = 8;
