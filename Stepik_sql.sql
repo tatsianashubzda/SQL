@@ -981,8 +981,6 @@ ORDER BY RAND()
 limit 3;
 
 --99
-
-
 Студент прошел тестирование (то есть все его ответы занесены в таблицу testing), далее необходимо вычислить результат(запрос) и занести его в таблицу attempt для соответствующей попытки.  Результат попытки вычислить как количество правильных ответов, деленное на 3 (количество вопросов в каждой попытке) и умноженное на 100. Результат округлить до целого.
 Будем считать, что мы знаем id попытки,  для которой вычисляется результат, в нашем случае это 8.
 
@@ -992,3 +990,159 @@ UPDATE attempt
         FROM answer INNER JOIN testing ON answer.answer_id = testing.answer_id
         WHERE testing.attempt_id = 8)
     WHERE attempt.attempt_id = 8;
+
+
+
+--100
+Удалить из таблицы attempt все попытки, выполненные раньше 1 мая 2020 года. Также удалить и все соответствующие этим попыткам вопросы из таблицы testing, которая создавалась следующим запросом:
+
+CREATE TABLE testing (
+    testing_id INT PRIMARY KEY AUTO_INCREMENT, 
+    attempt_id INT, 
+    question_id INT, 
+    answer_id INT,
+    FOREIGN KEY (attempt_id)  REFERENCES attempt (attempt_id) ON DELETE CASCADE
+);
+
+
+
+DELETE FROM attempt
+WHERE date_attempt < '2020-05-01';
+
+
+
+--101
+Вывести абитуриентов, которые хотят поступать на образовательную программу «Мехатроника и робототехника» в отсортированном по фамилиям виде.
+
+
+SELECT name_enrollee
+FROM enrollee INNER JOIN program_enrollee USING(enrollee_id)
+INNER JOIN program USING(program_id)
+WHERE name_program = 'Мехатроника и робототехника'
+ORDER BY name_enrollee 
+
+
+
+--102
+Вывести образовательные программы, на которые для поступления необходим предмет «Информатика». Программы отсортировать в обратном алфавитном порядке.
+
+Фрагмент логической схемы базы данных:
+
+SELECT name_program FROM program
+INNER JOIN program_subject USING(program_id)
+INNER JOIN subject USING(subject_id)
+WHERE name_subject = 'Информатика'
+ORDER BY name_program DESC;
+
+
+
+--103
+Выведите количество абитуриентов, сдавших ЕГЭ по каждому предмету, максимальное, минимальное и среднее значение баллов по предмету ЕГЭ. Вычисляемые столбцы назвать Количество, Максимум, Минимум, Среднее. Информацию отсортировать по названию предмета в алфавитном порядке, среднее значение округлить до одного знака после запятой.
+
+SELECT name_subject, 
+       COUNT(enrollee_id) AS Количество,
+       MAX(result) AS Максимум,
+       MIN(result) AS Минимум,
+       ROUND(AVG(result), 1) AS Среднее
+FROM subject
+       INNER JOIN enrollee_subject USING(subject_id)
+GROUP BY name_subject
+ORDER BY name_subject;
+
+
+--104
+Вывести образовательные программы, для которых минимальный балл ЕГЭ по каждому предмету больше или равен 40 баллам. Программы вывести в отсортированном по алфавиту виде.
+
+SELECT name_program
+FROM (
+    SELECT name_program, MIN(min_result) r
+    FROM program
+        NATURAL JOIN program_subject
+    GROUP BY 1
+    HAVING r >= 40) table1
+ORDER BY name_program
+
+
+
+
+--105
+Вывести образовательные программы, которые имеют самый большой план набора,  вместе с этой величиной.
+
+SELECT name_program, plan
+FROM program
+WHERE plan = (SELECT MAX(plan) FROM program) 
+
+
+--106
+Посчитать, сколько дополнительных баллов получит каждый абитуриент. Столбец с дополнительными баллами назвать Бонус. Информацию вывести в отсортированном по фамилиям виде.
+
+SELECT name_enrollee,
+       IFNULL(SUM(achievement.bonus),0) AS Бонус
+FROM enrollee
+     LEFT JOIN enrollee_achievement USING(enrollee_id)
+     LEFT JOIN achievement USING(achievement_id)
+GROUP BY name_enrollee
+ORDER BY name_enrollee;
+
+
+
+--107
+Выведите сколько человек подало заявление на каждую образовательную программу и конкурс на нее (число поданных заявлений деленное на количество мест по плану), округленный до 2-х знаков после запятой. В запросе вывести название факультета, к которому относится образовательная программа, название образовательной программы, план набора абитуриентов на образовательную программу (plan), количество поданных заявлений (Количество) и Конкурс. Информацию отсортировать в порядке убывания конкурса.
+
+SELECT name_department, name_program, plan,
+	COUNT(*) AS Количество,
+	ROUND(COUNT(*)/plan ,2) AS Конкурс
+FROM program_enrollee
+	JOIN program USING (program_id)
+	JOIN department USING (department_id)
+GROUP BY name_department, name_program, plan
+ORDER BY plan, name_program DESC
+
+
+
+--108
+Вывести образовательные программы, на которые для поступления необходимы предмет «Информатика» и «Математика» в отсортированном по названию программ виде.
+
+SELECT name_program
+FROM program
+    JOIN program_subject ps USING(program_id)
+    JOIN subject s ON ps.subject_id=s.subject_id AND name_subject IN ('Информатика','Математика')
+GROUP BY name_program
+HAVING COUNT(name_subject)=2
+ORDER BY name_program
+
+
+
+
+--109
+Посчитать количество баллов каждого абитуриента на каждую образовательную программу, на которую он подал заявление, по результатам ЕГЭ. В результат включить название образовательной программы, фамилию и имя абитуриента, а также столбец с суммой баллов, который назвать itog. Информацию вывести в отсортированном сначала по образовательной программе, а потом по убыванию суммы баллов виде.
+
+SELECT p.name_program, e.name_enrollee, SUM(es.result) AS itog
+FROM program_subject ps
+    INNER JOIN program p USING(program_id)
+    INNER JOIN program_enrollee pe USING(program_id)
+    INNER JOIN enrollee e USING(enrollee_id)
+    INNER JOIN enrollee_subject es ON es.subject_id = ps.subject_id AND es.enrollee_id = pe.enrollee_id
+GROUP BY p.name_program, e.name_enrollee
+ORDER BY p.name_program,  SUM(es.result) DESC;
+
+
+
+--110
+Вывести название образовательной программы и фамилию тех абитуриентов, которые подавали документы на эту образовательную программу, но не могут быть зачислены на нее. Эти абитуриенты имеют результат по одному или нескольким предметам ЕГЭ, необходимым для поступления на эту образовательную программу, меньше минимального балла. Информацию вывести в отсортированном сначала по программам, а потом по фамилиям абитуриентов виде.
+Например, Баранов Павел по «Физике» набрал 41 балл, а  для образовательной программы «Прикладная механика» минимальный балл по этому предмету определен в 45 баллов. Следовательно, абитуриент на данную программу не может поступить.
+
+SELECT name_program, name_enrollee
+FROM enrollee
+     JOIN program_enrollee USING(enrollee_id)
+     JOIN program USING(program_id)
+     JOIN program_subject USING(program_id)
+     JOIN subject USING(subject_id)
+     JOIN enrollee_subject USING(subject_id)
+WHERE enrollee_subject.enrollee_id = enrollee.enrollee_id and result < min_result
+ORDER BY name_program, name_enrollee
+
+
+
+--111
+
