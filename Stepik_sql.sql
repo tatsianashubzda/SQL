@@ -1104,9 +1104,8 @@ ORDER BY plan, name_program DESC
 Вывести образовательные программы, на которые для поступления необходимы предмет «Информатика» и «Математика» в отсортированном по названию программ виде.
 
 SELECT name_program
-FROM program
-    JOIN program_subject ps USING(program_id)
-    JOIN subject s ON ps.subject_id=s.subject_id AND name_subject IN ('Информатика','Математика')
+FROM program  JOIN program_subject ps USING(program_id)
+JOIN subject s ON ps.subject_id=s.subject_id AND name_subject IN ('Информатика','Математика')
 GROUP BY name_program
 HAVING COUNT(name_subject)=2
 ORDER BY name_program
@@ -1118,11 +1117,10 @@ ORDER BY name_program
 Посчитать количество баллов каждого абитуриента на каждую образовательную программу, на которую он подал заявление, по результатам ЕГЭ. В результат включить название образовательной программы, фамилию и имя абитуриента, а также столбец с суммой баллов, который назвать itog. Информацию вывести в отсортированном сначала по образовательной программе, а потом по убыванию суммы баллов виде.
 
 SELECT p.name_program, e.name_enrollee, SUM(es.result) AS itog
-FROM program_subject ps
-    INNER JOIN program p USING(program_id)
-    INNER JOIN program_enrollee pe USING(program_id)
-    INNER JOIN enrollee e USING(enrollee_id)
-    INNER JOIN enrollee_subject es ON es.subject_id = ps.subject_id AND es.enrollee_id = pe.enrollee_id
+FROM program_subject ps INNER JOIN program p USING(program_id)
+INNER JOIN program_enrollee pe USING(program_id)
+INNER JOIN enrollee e USING(enrollee_id)
+INNER JOIN enrollee_subject es ON es.subject_id = ps.subject_id AND es.enrollee_id = pe.enrollee_id
 GROUP BY p.name_program, e.name_enrollee
 ORDER BY p.name_program,  SUM(es.result) DESC;
 
