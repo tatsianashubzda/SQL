@@ -1172,3 +1172,15 @@ USING applicant JOIN (
     WHERE result < min_result ) AS t
  ON applicant.program_id = t.program_id AND
     applicant.enrollee_id = t.enrollee_id
+
+
+
+--113
+Повысить итоговые баллы абитуриентов в таблице applicant на значения дополнительных баллов (использовать запрос из предыдущего урока).
+
+UPDATE applicant JOIN (
+    SELECT enrollee_id, IFNULL(SUM(bonus), 0) AS Бонус FROM enrollee_achievement
+    LEFT JOIN achievement USING(achievement_id)
+    GROUP BY enrollee_id ) AS t USING(enrollee_id)
+SET itog = itog + Бонус
+
