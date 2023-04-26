@@ -1183,3 +1183,17 @@ UPDATE applicant JOIN (
     GROUP BY enrollee_id ) AS t USING(enrollee_id)
 SET itog = itog + Ѕонус
 
+
+
+--114
+ѕоскольку при добавлении дополнительных баллов, абитуриенты по каждой образовательной программе могут следовать не в пор€дке убывани€ суммарных баллов, необходимо создать новую таблицу applicant_order на основе таблицы applicant. ѕри создании таблицы данные нужно отсортировать сначала по id образовательной программы, потом по убыванию итогового балла. ј таблицу applicant, котора€ была создана как вспомогательна€, необходимо удалить.
+
+CREATE TABLE applicant_order
+SELECT * FROM applicant
+ORDER BY program_id, itog DESC;
+
+DROP TABLE applicant
+
+
+
+--115
