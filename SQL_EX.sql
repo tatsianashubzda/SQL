@@ -57,4 +57,32 @@ select distinct Product.maker, Laptop.speed  from product inner join  laptop  on
 
 
 
+7. Найдите номера моделей и цены всех имеющихся в продаже продуктов (любого типа) производителя B (латинская буква).
+
+SELECT NEW.model, price 
+FROM (SELECT model, price 
+ FROM PC 
+ UNION
+ SELECT model, price 
+  FROM Laptop
+ UNION
+ SELECT model, price 
+ FROM Printer
+ ) AS NEW JOIN 
+ Product  ON NEW.model = Product.model
+WHERE Product.maker = 'B'
+
+
+
+8. Найдите производителя, выпускающего ПК, но не ПК-блокноты.
+
+select maker from product
+where type = 'pc' 
+
+except 
+
+select maker from product
+where type = 'laptop'
+
+
 
