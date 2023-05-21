@@ -85,4 +85,22 @@ select maker from product
 where type = 'laptop'
 
 
+9. Найдите производителей ПК с процессором не менее 450 Мгц. Вывести: Maker
+
+Select distinct maker from product join pc
+on product.model = pc.model
+where speed>=450
+
+
+
+10. Найдите модели принтеров, имеющих самую высокую цену. Вывести: model, price
+
+Select model, price from printer
+where price = (select max(price) from printer)
+
+
+11. Найдите среднюю скорость ПК.
+
+select avg(speed) from pc
+
 
