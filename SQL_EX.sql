@@ -104,3 +104,15 @@ where price = (select max(price) from printer)
 select avg(speed) from pc
 
 
+
+
+12. Найдите среднюю скорость ПК-блокнотов, цена которых превышает 1000 дол.
+
+select avg(speed) from laptop where price>1000
+
+
+
+
+
+
+
