@@ -138,5 +138,18 @@ where numGuns>=10
 
 
 
+15. 
+Найдите размеры жестких дисков, совпадающих у двух и более PC. Вывести: HD
+
+select hd from pc 
+group by hd 
+having count(hd)  >=2
+
+
+
+
+
+
+
 
 
