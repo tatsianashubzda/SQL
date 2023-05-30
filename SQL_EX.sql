@@ -147,6 +147,16 @@ having count(hd)  >=2
 
 
 
+16.
+Найдите пары моделей PC, имеющих одинаковые скорость и RAM. В результате каждая пара указывается только один раз, т.е. (i,j), но не (j,i), Порядок вывода: модель с большим номером, модель с меньшим номером, скорость и RAM.
+
+select distinct A.model, B.model, A.speed, A.ram from PC as A, 
+(select model, speed, ram from PC) as B
+where A.speed=B.speed and A.ram=B.ram and a.model>b.model
+
+
+
+
 
 
 
