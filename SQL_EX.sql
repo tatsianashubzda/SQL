@@ -157,6 +157,16 @@ where A.speed=B.speed and A.ram=B.ram and a.model>b.model
 
 
 
+17.
+Найдите модели ПК-блокнотов, скорость которых меньше скорости каждого из ПК.
+Вывести: type, model, speed
+
+SELECT DISTINCT product.type, laptop.model, laptop.speed 
+FROM product JOIN laptop on product.model=laptop.model
+WHERE laptop.speed < all(SELECT speed FROM pc)
+
+
+
 
 
 
