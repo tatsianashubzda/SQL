@@ -208,6 +208,15 @@ GROUP BY maker
 
 
 
+22.
+Для каждого значения скорости ПК, превышающего 600 МГц, определите среднюю цену ПК с такой же скоростью. Вывести: speed, средняя цена.
+
+SELECT speed, AVG(price) as SR_Price from PC 
+GROUP BY speed
+having speed>600
+
+
+
 
 
 
